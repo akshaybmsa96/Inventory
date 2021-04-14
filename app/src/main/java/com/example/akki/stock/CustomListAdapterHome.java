@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -26,29 +28,38 @@ import static android.content.Context.MODE_PRIVATE;
  * Created by Akki on 30-04-2017.
  */
 
-public class CustomListAdapterHome extends ArrayAdapter<String> {
+public class CustomListAdapterHome extends ArrayAdapter<CustomListAdapterHome.DataSet> {
 
 private final Activity context;
-private final ArrayList<Integer> id;
-private final ArrayList<String> iname;
-private final ArrayList<String> unit;
-private final ArrayList<Integer> ll;
-private final  ArrayList<Integer> ul;
-private final ArrayList<Integer> cs;
-    PopupMenu popupMenu;
+public static class DataSet {
+    public DataSet(int itemId, String itemName, String itemUnit, int lowerLimit, int upperLimit, int currentStock){
+        this.itemId=itemId;
+        this.itemName=itemName;
+        this.itemUnit=itemUnit;
+        this.lowerLimit=lowerLimit;
+        this.upperLimit=upperLimit;
+        this.currentStock=currentStock;
+    }
+    private int itemId;
+    public String itemName;
+    private String itemUnit;
+    private int lowerLimit;
+    private int upperLimit;
+    private int currentStock;
+}
+private final ArrayList<DataSet> stockList;
+PopupMenu popupMenu;
 
-public CustomListAdapterHome(Activity context, ArrayList<Integer> id, ArrayList<String> iname, ArrayList<String> unit, ArrayList<Integer> ll , ArrayList<Integer> ul, ArrayList<Integer> cs) {
-        super(context, R.layout.listviewlayout, iname);
+
+public CustomListAdapterHome(Activity context, ArrayList<DataSet> dataSet) {
+        super(context, R.layout.listviewlayout, dataSet);
         // TODO Auto-generated constructor stub
 
         this.context=context;
-        this.id=id;
-        this.iname=iname;
-        this.unit=unit;
-        this.ll=ll;
-        this.ul=ul;
-        this.cs=cs;
+        this.stockList=dataSet;
         }
+
+//        public void update()
 
 public View getView(final int position, View view, ViewGroup parent) {
         LayoutInflater inflater=context.getLayoutInflater();
@@ -61,11 +72,11 @@ public View getView(final int position, View view, ViewGroup parent) {
         ImageView menubutton=(ImageView)rowView.findViewById(R.id.dotimgid);
 
 
-        String data=iname.get(position);
-        String data1=unit.get(position);
-        int data2=(cs.get(position)).intValue();
-        int l1=(ll.get(position)).intValue();
-        int l2=(ul.get(position)).intValue();
+        String data=stockList.get(position).itemName;
+        String data1=stockList.get(position).itemUnit;
+        int data2=stockList.get(position).currentStock;
+        int l1=stockList.get(position).lowerLimit;
+        int l2=stockList.get(position).upperLimit;
         float l=(float)data2/(float)l2*100;
         int p=Math.round(l);
 
@@ -113,29 +124,25 @@ public View getView(final int position, View view, ViewGroup parent) {
                             {
 
                                 i=new Intent(getContext(),AddQtyActivity.class);
-                                i.putExtra("id",id.get(position));
-                                i.putExtra("item",iname.get(position));
-                                i.putExtra("iunit",unit.get(position));
+                                i.putExtra("id",stockList.get(position).itemId);
+                                i.putExtra("item",stockList.get(position).itemName);
+                                i.putExtra("iunit",stockList.get(position).itemUnit);
                                 getContext().startActivity(i);
                             }
 
                             else if(mid==R.id.usedqty)
                             {
-
-
                                 i=new Intent(getContext(),DecQtyActivity.class);
-                                i.putExtra("id",id.get(position));
-                                i.putExtra("item",iname.get(position));
-                                i.putExtra("iunit",unit.get(position));
+                                i.putExtra("id",stockList.get(position).itemId);
+                                i.putExtra("item",stockList.get(position).itemName);
+                                i.putExtra("iunit",stockList.get(position).itemUnit);
                                 getContext().startActivity(i);
                             }
 
                             else if(mid==R.id.edit_item)
                             {
-
-
                                 i=new Intent(getContext(),UpdateItemActivity.class);
-                                i.putExtra("id",id.get(position));
+                                i.putExtra("id",stockList.get(position).itemId);
                                 getContext().startActivity(i);
                             }
 
@@ -149,8 +156,8 @@ public View getView(final int position, View view, ViewGroup parent) {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
 
-                                        String log="Item " + iname.get(position) + " was Deleted";
-                                        int i=id.get(position).intValue();
+                                        String log="Item " + stockList.get(position).itemName + " was Deleted";
+                                        int i=stockList.get(position).itemId;
 
                                         SQLiteDatabase mydatabase = getContext().openOrCreateDatabase("ypdb",MODE_PRIVATE,null);
                                         // mydatabase.execSQL("Drop Table stock");
@@ -159,12 +166,7 @@ public View getView(final int position, View view, ViewGroup parent) {
 
                                         mydatabase.execSQL("DELETE from stock where id= "+ i +";");
                                         mydatabase.execSQL("INSERT INTO alog ('log') VALUES('" + log + "');");
-                                        id.remove(position);
-                                        iname.remove(position);
-                                        ll.remove(position);
-                                        ul.remove(position);
-                                        cs.remove(position);
-                                        unit.remove(position);
+                                        stockList.remove(position);
                                         notifyDataSetChanged();
 
                                     }

@@ -5,6 +5,7 @@
     <color name="colorAccent">#0D47A1</color>
     <color name="blue">#2196F3</color>
     <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
     <color name="splashcolor">#795548</color>
     <color name="progressgreen">#388E3C</color>
     <color name="progressyellow">#FFC400</color>
