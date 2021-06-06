@@ -8,8 +8,12 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -21,6 +25,9 @@ public class MainActivity extends AppCompatActivity  {
     MenuItem prevItem;
     DrawerLayout drawer;
     FragmentTransaction fragmentTransaction;
+    SearchView searchView;
+    TextView toolbarText;
+    private HomeFragment homeFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,17 +36,16 @@ public class MainActivity extends AppCompatActivity  {
 
 
 
-        tb=(Toolbar)findViewById(R.id.toolbar);
-
-
+        homeFragment = new HomeFragment();
+        tb = (Toolbar) findViewById(R.id.toolbar);
+        searchView = (SearchView) findViewById(R.id.searchView);
+        toolbarText = (TextView) findViewById(R.id.toolbarText);
 
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigator);
-        setSupportActionBar(tb);
-        getSupportActionBar().setTitle("Stock");
+        toolbarText.setText("Stock");
+
         tb.setTitleTextColor(0XFFFFFFFF);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setDisplayUseLogoEnabled(true);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 
@@ -60,9 +66,10 @@ public class MainActivity extends AppCompatActivity  {
 
                     case R.id.dashboard:
                         fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                        fragmentTransaction.replace(R.id.home_layout_id, new HomeFragment());
+                        fragmentTransaction.replace(R.id.home_layout_id, homeFragment);
                         fragmentTransaction.commit();
-                        getSupportActionBar().setTitle("Stock");
+                        toolbarText.setText("Stock");
+                        searchView.setVisibility(View.VISIBLE);
                         drawer.closeDrawers();
                         break;
 
@@ -70,35 +77,22 @@ public class MainActivity extends AppCompatActivity  {
                         fragmentTransaction = getSupportFragmentManager().beginTransaction();
                         fragmentTransaction.replace(R.id.home_layout_id, new FragmentAddItem());
                         fragmentTransaction.commit();
-                        getSupportActionBar().setTitle("Add Item");
+                        toolbarText.setText("Add Item");
+                        searchView.setVisibility(View.GONE);
                         drawer.closeDrawers();
                         break;
 
-                   case R.id.activity_log:
+                    case R.id.activity_log:
                         fragmentTransaction = getSupportFragmentManager().beginTransaction();
                         fragmentTransaction.replace(R.id.home_layout_id, new LogFragment());
                         fragmentTransaction.commit();
-                        getSupportActionBar().setTitle("Activity Log");
+                        toolbarText.setText("Activity Log");
+                        searchView.setVisibility(View.GONE);
                         drawer.closeDrawers();
                         break;
 
-                /*     case R.id.offers_id:
-                        fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                        fragmentTransaction.replace(R.id.home_layout_id, new Offers_Fragment());
-                        fragmentTransaction.commit();
-                        getSupportActionBar().setTitle("Offers & Combos");
-                        drawer.closeDrawers();
-                        break;
-
-                    case R.id.outlet_id:
-                        fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                        fragmentTransaction.replace(R.id.home_layout_id, new Outlet_fragment());
-                        fragmentTransaction.commit();
-                        getSupportActionBar().setTitle("Outlet");
-                        drawer.closeDrawers();
-                        break;
-    */
                 }
+
                 return false;
 
 
@@ -109,18 +103,47 @@ public class MainActivity extends AppCompatActivity  {
         MenuItem item = navigationView.getMenu().findItem(R.id.dashboard);
         item.setCheckable(true);
         item.setChecked(true);
-        prevItem=item;
-        fragmentTransaction=getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.home_layout_id, new HomeFragment());
+        prevItem = item;
+        fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.add(R.id.home_layout_id, homeFragment);
         fragmentTransaction.commit();
         toggle = new ActionBarDrawerToggle(
-                this, drawer,tb,R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, tb, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
 
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
         drawer.closeDrawers();
 
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toolbarText.setVisibility(View.GONE);
+            }
+        });
+
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                toolbarText.setVisibility(View.VISIBLE);
+                return false;
+            }
+        });
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                homeFragment.onSearch(newText);
+                return false;
+            }
+        });
+
     }
+
 
 }
